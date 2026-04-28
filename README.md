@@ -1,70 +1,156 @@
 # Polyglot — Multilingual NLP Summarizer
 
-A full-featured multilingual text summarization system supporting **English**, **Hindi**, and **Telugu** with no AI APIs — pure NLP.
+Polyglot is a web-based application that summarizes text in multiple languages, with support for English, Hindi, and Telugu. It uses traditional NLP techniques and does not rely on AI APIs.
+
+---
+
+## Overview
+
+The goal of this project is to reduce the time required to read long documents by automatically generating concise summaries. The system can process input from plain text, PDFs, and web articles, and also provides keyword extraction and translation.
+
+---
 
 ## Features
 
-| Feature | Library |
-|---|---|
-| Text Summarization | `sumy` (LSA algorithm) |
-| Language Detection | `langdetect` |
-| Keyword Extraction | `YAKE` |
-| Word Cloud | `wordcloud` + `matplotlib` |
-| PDF Extraction | `pdfplumber` |
-| URL Article Extraction | `newspaper3k` |
-| Translation | `deep-translator` (Google Translate, free tier) |
+| Feature                | Library Used           |
+| ---------------------- | ---------------------- |
+| Text Summarization     | sumy (LSA algorithm)   |
+| Language Detection     | langdetect             |
+| Keyword Extraction     | YAKE                   |
+| Word Cloud             | wordcloud + matplotlib |
+| PDF Extraction         | pdfplumber             |
+| URL Article Extraction | newspaper3k            |
+| Translation            | deep-translator        |
+
+---
+
+## How it works
+
+The application follows a simple pipeline:
+
+Input (text / PDF / URL)
+→ Language detection
+→ Summarization
+→ Keyword extraction
+→ (optional) translation
+→ Output displayed in the UI
+
+Summarization is done using the LSA algorithm (Latent Semantic Analysis), which selects the most relevant sentences from the input text.
+
+---
+
+## Tech Stack
+
+Backend:
+
+* Python
+* Flask
+
+NLP:
+
+* sumy
+* langdetect
+* YAKE
+* NLTK
+
+Document Processing:
+
+* pdfplumber
+* newspaper3k
+
+Visualization:
+
+* wordcloud
+* matplotlib
+
+Translation:
+
+* deep-translator
+
+Frontend:
+
+* HTML, CSS, JavaScript
+
+---
 
 ## Setup
 
-### 1. Install Python 3.9+
+1. Install Python 3.9 or higher
 
-### 2. Create virtual environment
+2. Create a virtual environment
+
 ```bash
 python -m venv venv
-source venv/bin/activate        # Mac/Linux
-venv\Scripts\activate           # Windows
 ```
 
-### 3. Install dependencies
+3. Activate the environment
+
+```bash
+# Mac/Linux
+source venv/bin/activate
+
+# Windows
+venv\Scripts\activate
+```
+
+4. Install dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Download NLTK data (first time only)
-```python
+5. Download NLTK data (only once)
+
+```bash
 python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
 ```
 
-### 5. Run
+6. Run the application
+
 ```bash
 python app.py
 ```
 
-Open **http://localhost:5000** in your browser.
+Open in browser:
+[http://localhost:5000](http://localhost:5000)
 
-## Tabs
+---
 
-- **Text** — Paste text in English, Hindi (हिंदी), or Telugu (తెలుగు)
-- **URL** — Paste any article/news URL to auto-extract + summarize
-- **PDF** — Upload a PDF and extract + summarize
-- **Translate** — Standalone translator between 10 languages
+## Application Tabs
 
-## Deploying to Render
+* Text: paste text in English, Hindi (हिंदी), or Telugu (తెలుగు)
+* URL: paste a news/article link to extract and summarize
+* PDF: upload a document and summarize its contents
+* Translate: translate text between supported languages
 
-1. Push this folder to a GitHub repo
-2. Create a new **Web Service** on [render.com](https://render.com)
-3. Set build command: `pip install -r requirements.txt`
-4. Set start command: `gunicorn app:app`
-5. Done — your app is live!
+---
 
-Add `gunicorn` to requirements.txt before deploying:
-```
-gunicorn>=21.0.0
-```
+## Deployment
 
-## Notes
+This project is designed to run locally using Flask.
 
-- Translation requires an internet connection (uses Google Translate free tier via `deep-translator`)
-- All other features work fully offline
-- Telugu summarization falls back to frequency-based extraction (sumy has limited Telugu support)
-- For scanned PDFs, text extraction will return empty — use text-based PDFs only
+Some libraries used (such as `pdfplumber` and `newspaper3k`) may require additional system-level dependencies when deploying to cloud platforms, so deployment can need extra configuration depending on the environment.
+
+To run the project:
+
+* Follow the setup steps above
+* Open `http://localhost:5000` in your browser
+
+---
+
+## Limitations
+
+* Uses extractive summarization (does not generate new sentences)
+* Telugu summarization uses a fallback method due to limited support in sumy
+* Scanned PDFs are not supported (no OCR)
+* Some websites may block content extraction
+* Translation requires an internet connection
+
+---
+
+## Future Improvements
+
+* Add abstractive summarization using transformer models
+* Evaluate summaries using ROUGE score
+* Add OCR support for scanned PDFs
+* Extend support to more Indian languages
