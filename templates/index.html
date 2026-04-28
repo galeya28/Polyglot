@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Polyglot — Multilingual NLP Summarizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inconsolata:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root { --transition: background 0.3s, color 0.3s, border-color 0.3s; }
+
+[data-theme="dark"] {
+  --bg:#06060a; --surface:#0d0d14; --card:#11111a; --border:#1d1d2a;
+  --accent:#3de8a0; --gold:#f0b84a; --blue:#4a8ff0; --pink:#f04a8a;
+  --text:#dddde8; --muted:#666678; --danger:#f04a6a; --input-bg:#0d0d14;
+  --shadow:0 4px 24px rgba(0,0,0,0.4);
+}
+[data-theme="light"] {
+  --bg:#f4f4f8; --surface:#ffffff; --card:#ffffff; --border:#dcdce8;
+  --accent:#1db87a; --gold:#d4870a; --blue:#2563eb; --pink:#db2777;
+  --text:#18181f; --muted:#6b6b80; --danger:#dc2626; --input-bg:#f9f9fc;
+  --shadow:0 4px 24px rgba(0,0,0,0.08);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inconsolata',monospace;font-size:14px;line-height:1.7;min-height:100vh;overflow-x:hidden;transition:var(--transition)}
+
+[data-theme="dark"] body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.03;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:150px}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+.wrap{max-width:1100px;margin:0 auto;padding:0 28px}
+
+header{padding:28px 0 22px;border-bottom:1px solid var(--border);margin-bottom:32px;transition:var(--transition)}
+.header-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
+.logo{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:-.5px}
+.logo span{color:var(--accent)}
+.logo em{color:var(--gold);font-style:normal}
+.header-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.lang-pills{display:flex;gap:7px;flex-wrap:wrap}
+.lang-pill{font-size:11px;padding:3px 10px;border-radius:100px;border:1px solid var(--border);color:var(--muted);font-family:'Inconsolata',monospace;transition:var(--transition)}
+.lang-pill.en{border-color:#3de8a060;color:var(--accent)}
+.lang-pill.hi{border-color:#f0b84a60;color:var(--gold)}
+.lang-pill.te{border-color:#4a8ff060;color:var(--blue)}
+
+.theme-toggle{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:5px 12px;cursor:pointer;transition:var(--transition);user-select:none}
+.theme-toggle:hover{border-color:var(--accent)}
+.toggle-track{width:36px;height:20px;border-radius:100px;background:var(--border);position:relative;transition:background 0.3s;flex-shrink:0}
+[data-theme="dark"] .toggle-track{background:var(--accent)}
+.toggle-thumb{width:14px;height:14px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:transform 0.3s}
+[data-theme="dark"] .toggle-thumb{transform:translateX(16px)}
+.toggle-label{font-size:11px;color:var(--muted);letter-spacing:.05em;min-width:28px}
+
+.tabs{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;width:fit-content;margin-bottom:24px;transition:var(--transition)}
+.tab-btn{background:transparent;border:none;padding:10px 22px;cursor:pointer;font-family:'Inconsolata',monospace;font-size:12px;letter-spacing:.05em;color:var(--muted);transition:all .2s;position:relative;text-transform:uppercase}
+.tab-btn:not(:last-child){border-right:1px solid var(--border)}
+.tab-btn:hover{color:var(--text);background:var(--surface)}
+.tab-btn.active{background:var(--surface);color:var(--accent)}
+.tab-btn.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--accent)}
+
+.input-section{display:none}
+.input-section.active{display:block;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.panel-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+
+textarea,input[type=text],input[type=url]{width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Inconsolata',monospace;font-size:13px;padding:14px 16px;outline:none;transition:var(--transition);resize:vertical}
+textarea{min-height:180px;line-height:1.8}
+textarea:focus,input:focus{border-color:var(--accent)}
+textarea::placeholder,input::placeholder{color:var(--muted)}
+
+.upload-zone{border:2px dashed var(--border);border-radius:8px;padding:36px;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.upload-icon{font-size:32px;margin-bottom:8px}
+.upload-hint{color:var(--muted);font-size:12px}
+.upload-name{color:var(--accent);font-size:12px;margin-top:6px}
+
+.controls-row{display:flex;align-items:center;gap:16px;margin-top:16px;flex-wrap:wrap}
+.ctrl-group{display:flex;align-items:center;gap:8px}
+.ctrl-label{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+
+select{background:var(--input-bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:'Inconsolata',monospace;font-size:12px;padding:6px 10px;outline:none;cursor:pointer;transition:var(--transition)}
+select:focus{border-color:var(--accent)}
+input[type=range]{accent-color:var(--accent);width:100px}
+.range-val{font-size:12px;color:var(--accent);min-width:16px;text-align:center}
+
+.btn-primary{background:var(--accent);border:none;color:#06060a;padding:11px 28px;border-radius:5px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.03em;margin-left:auto}
+.btn-primary:hover{opacity:.88;transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-primary.loading{position:relative;color:transparent}
+.btn-primary.loading::after{content:'';position:absolute;inset:0;margin:auto;width:16px;height:16px;border:2px solid #06060a40;border-top-color:#06060a;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+#results{display:none;margin-top:32px;animation:fadeUp .4s ease}
+#results.show{display:block}
+
+.results-grid{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:18px}
+@media(max-width:720px){.results-grid{grid-template-columns:1fr}}
+
+.result-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px;box-shadow:var(--shadow);transition:var(--transition)}
+.result-card-title{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.tag{background:var(--surface);border:1px solid var(--border);font-family:'Inconsolata',monospace;font-size:10px;padding:2px 8px;border-radius:100px;color:var(--accent);letter-spacing:.1em;font-weight:400}
+#summary-text{font-size:14px;line-height:1.9;color:var(--text)}
+
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center;transition:var(--transition)}
+.stat-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--accent)}
+.stat-key{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.stat-box.gold .stat-val{color:var(--gold)}
+.stat-box.blue .stat-val{color:var(--blue)}
+.stat-box.pink .stat-val{color:var(--pink)}
+
+.lang-detected{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:16px;transition:var(--transition)}
+.lang-dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.lang-detected span{font-size:12px;color:var(--muted)}
+.lang-detected strong{color:var(--text)}
+
+.keywords-wrap{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
+.kw-chip{background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:4px 12px;font-size:11px;color:var(--text);cursor:default;transition:all .2s;display:flex;align-items:center;gap:6px}
+.kw-chip:hover{border-color:var(--accent);color:var(--accent)}
+.kw-score{font-size:9px;color:var(--muted)}
+
+.translate-bar{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.btn-translate{background:var(--surface);border:1px solid var(--border);color:var(--gold);padding:8px 18px;border-radius:5px;font-family:'Inconsolata',monospace;font-size:12px;cursor:pointer;transition:all .2s;letter-spacing:.05em}
+.btn-translate:hover{border-color:var(--gold)}
+.btn-translate.loading{opacity:.5;cursor:not-allowed}
+#translated-text{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:16px;font-size:14px;line-height:1.9;color:var(--text);min-height:80px;transition:var(--transition)}
+
+.copy-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:3px;font-family:'Inconsolata',monospace;font-size:10px;cursor:pointer;transition:all .2s;letter-spacing:.05em}
+.copy-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+.error-bar{background:rgba(240,74,106,0.1);border:1px solid rgba(240,74,106,0.3);border-radius:6px;padding:12px 16px;color:var(--danger);font-size:13px;margin-top:16px;display:none}
+.error-bar.show{display:block}
+
+footer{margin-top:60px;border-top:1px solid var(--border);padding:20px 0;text-align:center;color:var(--muted);font-size:11px;letter-spacing:.1em;transition:var(--transition)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="logo">poly<span>glot</span><em>.</em></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.1em">Multilingual NLP Summarizer</div>
+    </div>
+    <div class="header-right">
+      <div class="lang-pills">
+        <span class="lang-pill en">🇬🇧 English</span>
+        <span class="lang-pill hi">🇮🇳 Hindi</span>
+        <span class="lang-pill te">🇮🇳 Telugu</span>
+      </div>
+      <div class="theme-toggle" onclick="toggleTheme()">
+        <span id="toggle-icon">🌙</span>
+        <div class="toggle-track"><div class="toggle-thumb"></div></div>
+        <span class="toggle-label" id="toggle-label">Dark</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('text',this)">📄 Text</button>
+  <button class="tab-btn" onclick="switchTab('url',this)">🔗 URL</button>
+  <button class="tab-btn" onclick="switchTab('pdf',this)">📎 PDF</button>
+  <button class="tab-btn" onclick="switchTab('translate',this)">🌐 Translate</button>
+</div>
+
+<div class="input-section active" id="tab-text">
+  <div class="panel-label">Input Text — English / हिन्दी / తెలుగు</div>
+  <textarea id="text-input" placeholder="Paste text in English, Hindi (हिंदी), or Telugu (తెలుగు)..."></textarea>
+  <div class="controls-row">
+    <div class="ctrl-group">
+      <span class="ctrl-label">Sentences</span>
+      <input type="range" id="text-sentences" min="2" max="10" value="5" oninput="document.getElementById('text-sval').textContent=this.value">
+      <span class="range-val" id="text-sval">5</span>
+    </div>
+    <button class="btn-primary" id="btn-text" onclick="summarizeText()">Summarize →</button>
+  </div>
+</div>
+
+<div class="input-section" id="tab-url">
+  <div class="panel-label">Article URL</div>
+  <input type="url" id="url-input" placeholder="https://en.wikipedia.org/wiki/Natural_language_processing">
+  <div class="controls-row">
+    <div class="ctrl-group">
+      <span class="ctrl-label">Sentences</span>
+      <input type="range" id="url-sentences" min="2" max="10" value="5" oninput="document.getElementById('url-sval').textContent=this.value">
+      <span class="range-val" id="url-sval">5</span>
+    </div>
+    <button class="btn-primary" id="btn-url" onclick="summarizeUrl()">Fetch & Summarize →</button>
+  </div>
+</div>
+
+<div class="input-section" id="tab-pdf">
+  <div class="panel-label">Upload PDF</div>
+  <div class="upload-zone" id="drop-zone">
+    <input type="file" id="pdf-input" accept=".pdf" onchange="onFileSelect(this)">
+    <div class="upload-icon">📄</div>
+    <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600;margin-bottom:4px">Drop PDF here or click to browse</div>
+    <div class="upload-hint">Max 16 MB · Text-based PDFs only</div>
+    <div class="upload-name" id="pdf-name"></div>
+  </div>
+  <div class="controls-row">
+    <div class="ctrl-group">
+      <span class="ctrl-label">Sentences</span>
+      <input type="range" id="pdf-sentences" min="2" max="10" value="5" oninput="document.getElementById('pdf-sval').textContent=this.value">
+      <span class="range-val" id="pdf-sval">5</span>
+    </div>
+    <button class="btn-primary" id="btn-pdf" onclick="summarizePdf()">Extract & Summarize →</button>
+  </div>
+</div>
+
+<div class="input-section" id="tab-translate">
+  <div class="panel-label">Text to Translate</div>
+  <textarea id="translate-input" style="min-height:140px" placeholder="Type or paste text to translate..."></textarea>
+  <div class="controls-row" style="margin-top:14px">
+    <div class="ctrl-group">
+      <span class="ctrl-label">From</span>
+      <select id="tr-src">
+        <option value="auto">Auto-detect</option>
+        <option value="en">English</option>
+        <option value="hi">Hindi</option>
+        <option value="te">Telugu</option>
+      </select>
+    </div>
+    <span style="color:var(--muted);font-size:18px">→</span>
+    <div class="ctrl-group">
+      <span class="ctrl-label">To</span>
+      <select id="tr-tgt">
+        <option value="en">English</option>
+        <option value="hi">Hindi</option>
+        <option value="te">Telugu</option>
+        <option value="es">Spanish</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+        <option value="ar">Arabic</option>
+        <option value="zh-CN">Chinese</option>
+        <option value="ja">Japanese</option>
+        <option value="ko">Korean</option>
+      </select>
+    </div>
+    <button class="btn-primary" id="btn-tr-standalone" onclick="translateStandalone()">Translate →</button>
+  </div>
+  <div style="margin-top:16px;display:none" id="tr-standalone-result">
+    <div class="panel-label">Translation</div>
+    <div id="tr-standalone-text" style="background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:16px;font-size:14px;line-height:1.9;min-height:80px;transition:var(--transition)"></div>
+  </div>
+</div>
+
+<div class="error-bar" id="error-bar"></div>
+
+<div id="results">
+  <div class="lang-detected">
+    <div class="lang-dot"></div>
+    <span>Detected language:</span>
+    <strong id="lang-name">—</strong>
+    <span id="lang-code" style="color:var(--muted);font-size:11px"></span>
+  </div>
+
+  <div class="results-grid">
+    <div class="result-card">
+      <div class="result-card-title">
+        Summary
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="tag" id="summary-lang-tag">en</span>
+          <button class="copy-btn" onclick="copyText('summary-text',this)">copy</button>
+        </div>
+      </div>
+      <div id="summary-text">—</div>
+    </div>
+    <div class="result-card">
+      <div class="result-card-title">Statistics</div>
+      <div class="stat-grid">
+        <div class="stat-box"><div class="stat-val" id="stat-orig">—</div><div class="stat-key">Original Words</div></div>
+        <div class="stat-box gold"><div class="stat-val" id="stat-summ">—</div><div class="stat-key">Summary Words</div></div>
+        <div class="stat-box pink"><div class="stat-val" id="stat-red">—</div><div class="stat-key">Reduced</div></div>
+        <div class="stat-box blue"><div class="stat-val" id="stat-sent">—</div><div class="stat-key">Sentences</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="result-card" style="margin-bottom:18px">
+    <div class="result-card-title">Keywords (YAKE Extraction)</div>
+    <div class="keywords-wrap" id="keywords-wrap">—</div>
+  </div>
+
+  <div class="result-card" id="translation-section" style="display:none">
+    <div class="result-card-title">
+      Translation
+      <button class="copy-btn" onclick="copyText('translated-text',this)">copy</button>
+    </div>
+    <div class="translate-bar">
+      <div class="ctrl-group">
+        <span class="ctrl-label">From</span>
+        <select id="tr-from">
+          <option value="auto">Auto</option>
+          <option value="en">English</option>
+          <option value="hi">Hindi</option>
+          <option value="te">Telugu</option>
+        </select>
+      </div>
+      <span style="color:var(--muted);font-size:16px">→</span>
+      <div class="ctrl-group">
+        <span class="ctrl-label">To</span>
+        <select id="tr-to">
+          <option value="en">English</option>
+          <option value="hi">Hindi</option>
+          <option value="te">Telugu</option>
+          <option value="es">Spanish</option>
+          <option value="fr">French</option>
+          <option value="de">German</option>
+          <option value="ar">Arabic</option>
+          <option value="zh-CN">Chinese</option>
+          <option value="ja">Japanese</option>
+          <option value="ko">Korean</option>
+        </select>
+      </div>
+      <button class="btn-translate" id="btn-translate" onclick="translateSummary()">Translate Summary →</button>
+    </div>
+    <div id="translated-text" style="color:var(--muted)">Select target language and click Translate</div>
+  </div>
+</div>
+
+</div>
+<footer><div class="wrap">Polyglot NLP · Python + Flask + Sumy + YAKE + LangDetect + deep-translator</div></footer>
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('toggle-icon').textContent  = isDark ? '☀️' : '🌙';
+  document.getElementById('toggle-label').textContent = isDark ? 'Light' : 'Dark';
+  localStorage.setItem('theme', isDark ? 'light' : 'dark');
+}
+(function() {
+  const saved = localStorage.getItem('theme');
+  if (saved) {
+    document.documentElement.setAttribute('data-theme', saved);
+    if (saved === 'light') {
+      document.getElementById('toggle-icon').textContent  = '☀️';
+      document.getElementById('toggle-label').textContent = 'Light';
+    }
+  }
+})();
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.input-section').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+function showError(msg) {
+  const el = document.getElementById('error-bar');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 6000);
+}
+function setLoading(btnId, on) {
+  const btn = document.getElementById(btnId);
+  btn.classList.toggle('loading', on); btn.disabled = on;
+}
+function handleResult(data) {
+  if (data.error) { showError(data.error); return; }
+  document.getElementById('lang-name').textContent        = data.language_name || 'Unknown';
+  document.getElementById('lang-code').textContent        = '(' + (data.language_code || '') + ')';
+  document.getElementById('summary-lang-tag').textContent = data.language_code || 'en';
+  document.getElementById('summary-text').textContent     = data.summary;
+  const s = data.stats || {};
+  document.getElementById('stat-orig').textContent = (s.original_words || 0).toLocaleString();
+  document.getElementById('stat-summ').textContent = (s.summary_words  || 0).toLocaleString();
+  document.getElementById('stat-red').textContent  = (s.reduction      || 0) + '%';
+  document.getElementById('stat-sent').textContent = s.sentences || '—';
+  const kw = document.getElementById('keywords-wrap');
+  kw.innerHTML = '';
+  if (data.keywords && data.keywords.length) {
+    data.keywords.forEach(k => {
+      const chip = document.createElement('span');
+      chip.className = 'kw-chip';
+      chip.innerHTML = k.word + '<span class="kw-score">' + k.score + '</span>';
+      kw.appendChild(chip);
+    });
+  } else { kw.textContent = 'No keywords extracted.'; }
+  document.getElementById('results').classList.add('show');
+  document.getElementById('translation-section').style.display = 'block';
+  document.getElementById('translated-text').textContent = 'Select target language and click Translate';
+  document.getElementById('translated-text').style.color = 'var(--muted)';
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+async function summarizeText() {
+  const text = document.getElementById('text-input').value.trim();
+  if (!text) { showError('Please enter some text.'); return; }
+  setLoading('btn-text', true);
+  try {
+    const r = await fetch('/api/summarize', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text, sentences: parseInt(document.getElementById('text-sentences').value) }) });
+    handleResult(await r.json());
+  } catch(e) { showError('Network error: ' + e.message); }
+  finally { setLoading('btn-text', false); }
+}
+async function summarizeUrl() {
+  const url = document.getElementById('url-input').value.trim();
+  if (!url) { showError('Please enter a URL.'); return; }
+  setLoading('btn-url', true);
+  try {
+    const r = await fetch('/api/summarize_url', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ url, sentences: parseInt(document.getElementById('url-sentences').value) }) });
+    handleResult(await r.json());
+  } catch(e) { showError('Network error: ' + e.message); }
+  finally { setLoading('btn-url', false); }
+}
+function onFileSelect(input) {
+  document.getElementById('pdf-name').textContent = input.files[0] ? '✓ ' + input.files[0].name : '';
+}
+async function summarizePdf() {
+  const input = document.getElementById('pdf-input');
+  if (!input.files[0]) { showError('Please upload a PDF file.'); return; }
+  const fd = new FormData();
+  fd.append('pdf', input.files[0]);
+  fd.append('sentences', document.getElementById('pdf-sentences').value);
+  setLoading('btn-pdf', true);
+  try {
+    const r = await fetch('/api/summarize_pdf', { method:'POST', body: fd });
+    handleResult(await r.json());
+  } catch(e) { showError('Network error: ' + e.message); }
+  finally { setLoading('btn-pdf', false); }
+}
+async function translateSummary() {
+  const summary = document.getElementById('summary-text').textContent;
+  if (!summary || summary === '—') { showError('No summary to translate.'); return; }
+  const btn = document.getElementById('btn-translate');
+  const el  = document.getElementById('translated-text');
+  btn.classList.add('loading'); btn.disabled = true;
+  el.textContent = 'Translating…'; el.style.color = 'var(--muted)';
+  try {
+    const r = await fetch('/api/translate', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text: summary, src: document.getElementById('tr-from').value, tgt: document.getElementById('tr-to').value }) });
+    const data = await r.json();
+    el.textContent = data.error ? 'Error: ' + data.error : data.translated;
+    el.style.color = data.error ? 'var(--danger)' : 'var(--text)';
+  } catch(e) { el.textContent = 'Network error: ' + e.message; }
+  finally { btn.classList.remove('loading'); btn.disabled = false; }
+}
+async function translateStandalone() {
+  const text = document.getElementById('translate-input').value.trim();
+  if (!text) { showError('Please enter text to translate.'); return; }
+  const btn = document.getElementById('btn-tr-standalone');
+  const result = document.getElementById('tr-standalone-result');
+  const out    = document.getElementById('tr-standalone-text');
+  btn.classList.add('loading'); btn.disabled = true;
+  result.style.display = 'block'; out.textContent = 'Translating…'; out.style.color = 'var(--muted)';
+  try {
+    const r = await fetch('/api/translate', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text, src: document.getElementById('tr-src').value, tgt: document.getElementById('tr-tgt').value }) });
+    const data = await r.json();
+    out.textContent = data.error ? 'Error: ' + data.error : data.translated;
+    out.style.color = data.error ? 'var(--danger)' : 'var(--text)';
+  } catch(e) { out.textContent = 'Network error: ' + e.message; }
+  finally { btn.classList.remove('loading'); btn.disabled = false; }
+}
+function copyText(id, btn) {
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
+    const orig = btn.textContent; btn.textContent = 'copied ✓';
+    setTimeout(() => btn.textContent = orig, 1800);
+  });
+}
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f && f.name.endsWith('.pdf')) {
+    document.getElementById('pdf-input').files = e.dataTransfer.files;
+    document.getElementById('pdf-name').textContent = '✓ ' + f.name;
+  }
+});
+</script>
+</body>
+</html>
