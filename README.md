@@ -1,176 +1,70 @@
-# Polyglot - Multilingual NLP Summarizer
+# Polyglot — Multilingual NLP Summarizer
 
-Polyglot is a web-based application that summarizes text in multiple languages, with support for English, Hindi, and Telugu. It uses traditional NLP techniques and does not rely on AI APIs.
-
----
-
-## Overview
-
-The goal of this project is to reduce the time required to read long documents by automatically generating concise summaries. The system can process input from plain text, PDFs, and web articles, and also provides keyword extraction and translation.
-
----
+A full-featured multilingual text summarization system supporting **English**, **Hindi**, and **Telugu** with no AI APIs — pure NLP.
 
 ## Features
 
-| Feature                | Library Used           |
-| ---------------------- | ---------------------- |
-| Text Summarization     | sumy (LSA algorithm)   |
-| Language Detection     | langdetect             |
-| Keyword Extraction     | YAKE                   |
-| Word Cloud             | wordcloud + matplotlib |
-| PDF Extraction         | pdfplumber             |
-| URL Article Extraction | newspaper3k            |
-| Translation            | deep-translator        |
-
----
-
-## How it works
-
-The application follows a simple pipeline:
-
-Input (text / PDF / URL)
-→ Language detection
-→ Summarization
-→ Keyword extraction
-→ (optional) translation
-→ Output displayed in the UI
-
-Summarization is done using the LSA algorithm (Latent Semantic Analysis), which selects the most relevant sentences from the input text.
-
----
-
-## Tech Stack
-
-Backend:
-
-* Python
-* Flask
-
-NLP:
-
-* sumy
-* langdetect
-* YAKE
-* NLTK
-
-Document Processing:
-
-* pdfplumber
-* newspaper3k
-
-Visualization:
-
-* wordcloud
-* matplotlib
-
-Translation:
-
-* deep-translator
-
-Frontend:
-
-* HTML, CSS, JavaScript
-
----
+| Feature | Library |
+|---|---|
+| Text Summarization | `sumy` (LSA algorithm) |
+| Language Detection | `langdetect` |
+| Keyword Extraction | `YAKE` |
+| Word Cloud | `wordcloud` + `matplotlib` |
+| PDF Extraction | `pdfplumber` |
+| URL Article Extraction | `newspaper3k` |
+| Translation | `deep-translator` (Google Translate, free tier) |
 
 ## Setup
 
-1. Install Python 3.9 or higher
+### 1. Install Python 3.9+
 
-2. Create a virtual environment
-
+### 2. Create virtual environment
 ```bash
 python -m venv venv
+source venv/bin/activate        # Mac/Linux
+venv\Scripts\activate           # Windows
 ```
 
-3. Activate the environment
-
-```bash
-# Mac/Linux
-source venv/bin/activate
-
-# Windows
-venv\Scripts\activate
-```
-
-4. Install dependencies
-
+### 3. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-5. Download NLTK data (only once)
-
-```bash
+### 4. Download NLTK data (first time only)
+```python
 python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
 ```
 
-6. Run the application
-
+### 5. Run
 ```bash
 python app.py
 ```
 
-Open in browser:
-[http://localhost:5000](http://localhost:5000)
+Open **http://localhost:5000** in your browser.
 
----
+## Tabs
 
-## Application Tabs
+- **Text** — Paste text in English, Hindi (हिंदी), or Telugu (తెలుగు)
+- **URL** — Paste any article/news URL to auto-extract + summarize
+- **PDF** — Upload a PDF and extract + summarize
+- **Translate** — Standalone translator between 10 languages
 
-* Text: paste text in English, Hindi (हिंदी), or Telugu (తెలుగు)
-* URL: paste a news/article link to extract and summarize
-* PDF: upload a document and summarize its contents
-* Translate: translate text between supported languages
+## Deploying to Render
 
----
+1. Push this folder to a GitHub repo
+2. Create a new **Web Service** on [render.com](https://render.com)
+3. Set build command: `pip install -r requirements.txt`
+4. Set start command: `gunicorn app:app`
+5. Done — your app is live!
 
-## Deployment (Railway)
-
-1. Push the project to a GitHub repository
-
-2. Go to Railway and create a new project
-
-3. Select **“Deploy from GitHub repo”** and choose your repository
-
-4. Railway will automatically detect the Python project
-
-5. Set the start command:
-
-```
-gunicorn app:app
-```
-
-6. Add `gunicorn` to your `requirements.txt`:
-
+Add `gunicorn` to requirements.txt before deploying:
 ```
 gunicorn>=21.0.0
 ```
 
-7. Deploy — Railway will generate a public URL for your app
+## Notes
 
----
-
-## Limitations
-
-* Uses extractive summarization (does not generate new sentences)
-* Telugu summarization uses a fallback method due to limited support in sumy
-* Scanned PDFs are not supported (no OCR)
-* Some websites may block content extraction
-* Translation requires an internet connection
-
----
-
-## Future Improvements
-
-* Add abstractive summarization using transformer models
-* Evaluate summaries using ROUGE score
-* Add OCR support for scanned PDFs
-* Extend support to more Indian languages
-
----
-
-If you want next, I can:
-
-* add a **“Demo” section (very useful for recruiters)**
-* or help you write a **short GitHub description + tags** so your project looks more polished when someone opens it
+- Translation requires an internet connection (uses Google Translate free tier via `deep-translator`)
+- All other features work fully offline
+- Telugu summarization falls back to frequency-based extraction (sumy has limited Telugu support)
+- For scanned PDFs, text extraction will return empty — use text-based PDFs only
